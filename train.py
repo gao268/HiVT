@@ -38,7 +38,20 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     model_checkpoint = ModelCheckpoint(monitor=args.monitor, save_top_k=args.save_top_k, mode='min')
-    trainer = pl.Trainer.from_argparse_args(args, callbacks=[model_checkpoint])
+    
+    # Gets a list of valid arguments for the Trainer constructor
+    valid_args = inspect.getfullargspec(pl.Trainer.__init__).args
+    # Filter parameters that match the Trainer in the args
+    trainer_kwargs = {k: v for k, v in vars(args).items() if k in valid_args}
+    trainer = pl.Trainer(**trainer_kwargs, callbacks=[model_checkpoint])
+    
     model = HiVT(**vars(args))
-    datamodule = ArgoverseV1DataModule.from_argparse_args(args)
+    
+    #Gets the list of valid arguments for the DataModule constructor
+    valid_args = inspect.getfullargspec(ArgoverseV1DataModule.__init__).args
+    # Filter invalid parameters in args 
+    datamodule_kwargs = {k: v for k, v in vars(args).items() if k in valid_args}
+    #Instantiate the DataModule
+    datamodule = ArgoverseV1DataModule(**datamodule_kwargs)
+    
     trainer.fit(model, datamodule)
