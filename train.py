@@ -40,7 +40,8 @@ if __name__ == '__main__':
     model_checkpoint = ModelCheckpoint(monitor=args.monitor, save_top_k=args.save_top_k, mode='min')
     
     # Gets a list of valid arguments for the Trainer constructor
-    valid_args = inspect.getfullargspec(pl.Trainer.__init__).args
+    sig = inspect.signature(pl.Trainer)
+    valid_args = list(sig.parameters.keys())
     # Filter parameters that match the Trainer in the args
     trainer_kwargs = {k: v for k, v in vars(args).items() if k in valid_args}
     trainer = pl.Trainer(**trainer_kwargs, callbacks=[model_checkpoint])
